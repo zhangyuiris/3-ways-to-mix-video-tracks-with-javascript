@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3. Insertable Stream</title>
+</head>
+<body>
+<div>
+  <button type="button" id="btn">start play</button>
+</div>
+<video id="mix" width="640" height="480" autoplay></video>
+<div style="position: absolute;right:0;top: 0" id="stat"></div>
+</body>
+<script type="module">
+	import { getUserStream, getScreenStream } from "./common/common.js";
+
+	let userStream, screenStream, worker, mixedGenerator, cameraReadable, screenReadable, mixedWritable;
+
+	mixedGenerator = new MediaStreamTrackGenerator({ kind: 'video' });
+	mixedWritable = mixedGenerator.writable;
+
+	document.getElementById('btn').addEventListener('click', () => { start() });
+
+	worker = new Worker('./worker/insertableStream.js');
+
+	worker.onmessage = function (e) {
+		ctx.transferFromImageBitmap(e.data.imageBitmap);
+	}
+
+	async function start() {
+		try {
+			userStream = await getUserStream();
+			screenStream = await getScreenStream();
+
+			const cameraProcessor = new MediaStreamTrackProcessor({ track: userStream.getVideoTracks()[0] });
+			const screenProcessor = new MediaStreamTrackProcessor({ track: screenStream.getVideoTracks()[0] });
+
+			cameraReadable = cameraProcessor.readable;
+      screenReadable = screenProcessor.readable;
+
+			render();
+			document.getElementById('mix').srcObject = new MediaStream([mixedGenerator]);
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	function render() {
+		worker.postMessage({
+			action: 'render',
+			cameraReadable,
+			screenReadable,
+			mixedWritable,
+		}, [
+			cameraReadable,
+			screenReadable,
+			mixedWritable,
+		]);
+	}
+
+</script>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>1. Canvas</title>
+</head>
+<body>
+<div>
+  <button type="button" id="btn">start play</button>
+</div>
+<video id="mix" width="640" height="480" autoplay></video>
+<div style="position: absolute;right:0;top: 0" id="stat"></div>
+</body>
+<script src="common/stat.js"></script>
+<script type="module">
+  import { getUserStream, getScreenStream, WIDTH, HEIGHT } from "./common/common.js";
+
+  let userVideo, screenVideo;
+
+	const stats = new Stats();
+	stats.setMode(0);
+	document.getElementById("stat").appendChild(stats.domElement);
+
+	const canvas = document.createElement('canvas');
+	canvas.width = WIDTH;
+	canvas.height = HEIGHT;
+	const ctx = canvas.getContext('2d');
+
+  userVideo = document.createElement('video');
+  userVideo.autoplay = true;
+  screenVideo = document.createElement('video');
+  screenVideo.autoplay = true;
+
+	document.getElementById('btn').addEventListener('click', () => { start() });
+
+	async function start() {
+		try {
+			const userStream = await getUserStream();
+			const screenStream = await getScreenStream();
+
+			userVideo.srcObject = userStream;
+			screenVideo.srcObject = screenStream;
+
+			render();
+			document.getElementById('mix').srcObject = canvas.captureStream();
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	function render() {
+		stats.begin();
+		ctx.drawImage(screenVideo, 0, 0, WIDTH, HEIGHT);
+		ctx.drawImage(userVideo, WIDTH/2, HEIGHT/2, WIDTH/2, HEIGHT/2);
+		stats.end();
+		requestAnimationFrame(render);
+	}
+
+</script>
+
+</html>

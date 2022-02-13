@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>2. OffscreenCanvas</title>
+</head>
+<body>
+<div>
+  <button type="button" id="btn">start play</button>
+</div>
+<video id="mix" width="640" height="480" autoplay></video>
+<div style="position: absolute;right:0;top: 0" id="stat"></div>
+</body>
+<script src="common/stat.js"></script>
+<script type="module">
+	import { getUserStream, getScreenStream, WIDTH, HEIGHT } from "./common/common.js";
+
+	let userStream, screenStream, worker, userCapture, screenCapture;
+
+	const stats = new Stats();
+	document.getElementById("stat").appendChild(stats.domElement);
+	document.getElementById('btn').addEventListener('click', () => { start() });
+
+	const canvas = document.createElement('canvas');
+	canvas.width = WIDTH;
+	canvas.height = HEIGHT;
+	const offscreen = canvas.transferControlToOffscreen();
+	worker = new Worker('./worker/offscreenCanvas-transfer.js');
+	worker.postMessage({ action: 'init', offscreen: offscreen }, [offscreen]);
+
+	async function start() {
+		try {
+			userStream = await getUserStream();
+			screenStream = await getScreenStream();
+			userCapture = new ImageCapture(userStream.getVideoTracks()[0]);
+      screenCapture = new ImageCapture(screenStream.getVideoTracks()[0]);
+
+      await render();
+
+			document.getElementById('mix').srcObject = canvas.captureStream();
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	async function render() {
+		stats.begin();
+
+		let userImageBitMap = await userCapture.grabFrame();
+		let screenImageBitMap = await screenCapture.grabFrame();
+
+		worker.postMessage({
+			action: 'render',
+			user: userImageBitMap,
+			screen: screenImageBitMap
+		});
+
+		stats.end();
+		requestAnimationFrame(render);
+	}
+
+</script>
+</html>
