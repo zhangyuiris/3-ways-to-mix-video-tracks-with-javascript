@@ -24,11 +24,11 @@ function mix(cameraReadable, screenReadable, mixedWritable) {
 			}
 			ctx.drawImage(cameraFrame, WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
 
-			const mixedFrame = new VideoFrame(offscreen);
+			const mixedFrame = new VideoFrame(offscreen, { timestamp: cameraFrame.timestamp });
 			cameraFrame.close();
 			controller.enqueue(mixedFrame);
 		}
 	});
-	
+
 	cameraReadable.pipeThrough(transformer).pipeTo(mixedWritable);
 }
