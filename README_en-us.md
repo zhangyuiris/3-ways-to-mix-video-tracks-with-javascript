@@ -14,7 +14,7 @@ Next, we will introduce several methods to introduce how to implement local mixe
 
 The code repository address of this article: [Click to visit](https://github.com/zhangyuiris/3-ways-to-mix-video-tracks-with-javascript) .
 
-# Scheme 1: Use Canvas to draw two video streams
+# Option 1: Use Canvas to draw two video streams
 
 ## Implementation ideas:
 
@@ -30,7 +30,7 @@ The code repository address of this article: [Click to visit](https://github.com
 
 Click to visit [Demo](https://mix-video-tracks.vercel.app/1_Canvas.html).
 
-# Scheme 2: OffScreenCanvas + Worker communication video frame
+# Option 2: OffScreenCanvas + Worker communication video frame
 
 `OffscreenCanvas` provides a `Canvas` object that can be rendered offscreen. It works in both `window` and `Web Worker` environments. It is an experimental new feature, mainly used to improve the rendering performance and experience of Canvas 2D/3D drawing applications and H5 games.
 
