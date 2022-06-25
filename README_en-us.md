@@ -101,7 +101,7 @@ Some API compatibility:
 
 Click to visit [Demo](https://mix-video-tracks.vercel.app/3_Insertable%20Stream.html).
 
-# Replenish
+# Recapitulation
 
 ## API Compatibility
 
